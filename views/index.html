@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<style>
+	video {
+		width: 500px;height:375px;border: 10px solid #ccc;
+		/*display: none;*/
+	}
+  canvas {
+    border: 10px solid #ccc;
+  }
+	</style>
+</head>
+<body>
+	<h2 id="info">有人吗？？？</h2>
+	<canvas width="500" height="375" id="can1"></canvas>
+	<!-- <canvas width="500" height="375" id="can2"></canvas> -->
+	<!-- <canvas width="500" height="375" id="re"></canvas> -->
+	<video></video>
+
+	<script>
+		var img = new Image();
+		img.src = './moustache.png'
+
+    var ws = new WebSocket('ws://localhost:4000');
+    ws.onopen = function () {
+				// ws.send('Hello Server!');
+		}
+
+		var canvas = document.getElementById('can1')
+		var v = canvas.getContext('2d')
+		// var canvas2 = document.getElementById('can2')
+		// var v2 = canvas2.getContext('2d')
+		// var canvas3 = document.getElementById('re')
+		// var re = canvas3.getContext('2d')
+
+		// 差不多的变量
+		var lastFrame = null
+
+		navigator.getUserMedia =
+			navigator.getUserMedia ||
+			navigator.webkitGetUserMedia ||
+			navigator.mozGetUserMedia
+
+		if (navigator.getUserMedia) {
+			navigator.getUserMedia(
+				{ video: { width: 500, height: 500 } },
+				function(stream) {
+					var video = document.querySelector('video')
+					video.srcObject = stream
+					video.onloadedmetadata = function(e) {
+						video.play()
+						setInterval(function() {
+							drawCanvas(video)
+						}, 100)
+						// setInterval(function() {
+						// 	haveMove(video)
+						// }, 2000)
+						//				 haveMove(video);
+					}
+				},
+				function(err) {
+					console.log('The following error occurred: ' + err.name)
+				}
+			)
+		} else {
+			console.log('getUserMedia not supported')
+		}
+
+		function drawCanvas(video) {
+			v.drawImage(video, 0, 0, 500, 375)
+			vData = v.getImageData(0, 0, 500, 375)
+			var datauri = canvas.toDataURL('image/jpeg');
+			var b64 = datauri.split(",", 2)[1];
+			// console.log(a)
+			ws.send(base64ToArrayBuffer(b64))
+
+			ws.onmessage = function(event) {
+				// var data = event.data;
+				let temp = event.data ? JSON.parse(event.data) : ''
+				console.log(temp)
+				if (temp) {
+					let mouth = temp[0].mouth[0]
+					v.drawImage(video, 0, 0, 500, 375)
+					v.drawImage(img, mouth.x - 25 + mouth.width / 2 , mouth.y, 50, 13)
+					v.strokeStyle = '#fff';
+					v.strokeRect(mouth.x, mouth.y, mouth.width, mouth.height);
+				}
+				// 处理数据
+			};
+
+			// ws.send(_base64ToArrayBuffer(a))
+			vLength = vData.length
+			vH = 375
+			vW = 500
+
+			function base64ToArrayBuffer(base64) {
+				var bstr = window.atob(base64);
+				var bytes = new Uint8Array(bstr.length);
+				for (var i = 0; i < bstr.length; i++)        {
+					bytes[i] = bstr.charCodeAt(i);
+				}
+				return bytes.buffer;
+			}
+			// var newVData = v2.createImageData(500, 375)
+			// var reData = re.createImageData(500, 375)
+			// newVData.data = []
+			// reData.data = []
+			// // 这里是左右翻转
+			// for (var i = 0; i < vH; i++) {
+			// 	for (var j = 0; j < vW; j++) {
+			// 		newVData.data[(i * 500 + j) * 4] = vData.data[(i * 500 + (500 - j)) * 4]
+			// 		newVData.data[(i * 500 + j) * 4 + 1] =
+			// 			vData.data[(i * 500 + (500 - j)) * 4 + 1]
+			// 		newVData.data[(i * 500 + j) * 4 + 2] =
+			// 			vData.data[(i * 500 + (500 - j)) * 4 + 2]
+			// 		newVData.data[(i * 500 + j) * 4 + 3] =
+			// 			vData.data[(i * 500 + (500 - j)) * 4 + 3]
+			// 	}
+			// }
+			// v2.putImageData(newVData, 0, 0)
+
+			// var curFrame = canvas2.toDataURL();  //转为base64并保存
+			// var img = new Image();
+			// console.time('start')
+			// img.src = curFrame;
+			// img.onload = function () {
+			// 	console.timeEnd('start')
+			// 	re.drawImage(this, 0, 0, 640, 480);
+			// }
+
+			// 这里是上下翻转
+			// for (var i = 0; i < vH; i++) {
+			// 	for (var j = 0; j < vW; j++) {
+			// 		Array(4).fill('').forEach((v, index) =>
+			// 			reData.data[(i * 500 + j) * 4 + index] = vData.data[((350 - i) * 500 + j) * 4 + index]
+			// 		)
+			// 	}
+			// }
+			// re.putImageData(reData, 0, 0)
+
+		}
+		// 截图
+		// context.drawImage(video, 0, 0, 200, 150)
+
+		// canvas.toDataURL('image/png')
+		// to base64 url
+
+		function haveMove(video) {
+			v.drawImage(video, 0, 0, 500, 375)
+			var proData = v.getImageData(0, 0, 500, 375)
+			// console.log(proData)
+			var nowData = new Image()
+			var x = 0
+			nowData.onload = function() {
+				console.log('加载好了')
+			}
+			setTimeout(function() {
+				nowData = v.getImageData(0, 0, 500, 375)
+				for (var i = 0; i < proData.data.length; i++) {
+					if (Math.abs(proData.data[i] - nowData.data[i]) > 10) {
+						x++
+					}
+				}
+				// console.log(x)
+				if (x > proData.data.length / 200) {
+					console.log('有人在动！！')
+					document.getElementById('info').innerHTML = '有人在！！'
+				} else {
+					document.getElementById('info').innerHTML = '没人~'
+				}
+			}, 500)
+		}
+
+	</script>
+</body>
+</html>
