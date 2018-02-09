@@ -29,14 +29,18 @@
     ws.onopen = function () {
 				// ws.send('Hello Server!');
 		}
+		ws.onclose=function(e){
+			console.log(e);
+			ws.close(); //关闭TCP连接
+		};
+
+		window.onbeforeunload = function () {
+			ws.close(); //关闭TCP连接
+		}
+
 
 		var canvas = document.getElementById('can1')
 		var v = canvas.getContext('2d')
-		// var canvas2 = document.getElementById('can2')
-		// var v2 = canvas2.getContext('2d')
-		// var canvas3 = document.getElementById('re')
-		// var re = canvas3.getContext('2d')
-
 		// 差不多的变量
 		var lastFrame = null
 
@@ -55,11 +59,7 @@
 						video.play()
 						setInterval(function() {
 							drawCanvas(video)
-						}, 100)
-						// setInterval(function() {
-						// 	haveMove(video)
-						// }, 2000)
-						//				 haveMove(video);
+						}, 500)
 					}
 				},
 				function(err) {
@@ -78,10 +78,11 @@
 			// console.log(a)
 			ws.send(base64ToArrayBuffer(b64))
 
-			ws.onmessage = function(event) {
+			function drawOther (event) {
+				if (!event.data) return
 				// var data = event.data;
 				let temp = event.data ? JSON.parse(event.data) : ''
-				console.log(temp)
+
 				if (temp) {
 					let mouth = temp[0].mouth[0]
 					v.drawImage(video, 0, 0, 500, 375)
@@ -89,10 +90,10 @@
 					v.strokeStyle = '#fff';
 					v.strokeRect(mouth.x, mouth.y, mouth.width, mouth.height);
 				}
-				// 处理数据
-			};
+			}
 
-			// ws.send(_base64ToArrayBuffer(a))
+			ws.onmessage = drawOther
+
 			vLength = vData.length
 			vH = 375
 			vW = 500
@@ -105,49 +106,6 @@
 				}
 				return bytes.buffer;
 			}
-			// var newVData = v2.createImageData(500, 375)
-			// var reData = re.createImageData(500, 375)
-			// newVData.data = []
-			// reData.data = []
-			// // 这里是左右翻转
-			// for (var i = 0; i < vH; i++) {
-			// 	for (var j = 0; j < vW; j++) {
-			// 		newVData.data[(i * 500 + j) * 4] = vData.data[(i * 500 + (500 - j)) * 4]
-			// 		newVData.data[(i * 500 + j) * 4 + 1] =
-			// 			vData.data[(i * 500 + (500 - j)) * 4 + 1]
-			// 		newVData.data[(i * 500 + j) * 4 + 2] =
-			// 			vData.data[(i * 500 + (500 - j)) * 4 + 2]
-			// 		newVData.data[(i * 500 + j) * 4 + 3] =
-			// 			vData.data[(i * 500 + (500 - j)) * 4 + 3]
-			// 	}
-			// }
-			// v2.putImageData(newVData, 0, 0)
-
-			// var curFrame = canvas2.toDataURL();  //转为base64并保存
-			// var img = new Image();
-			// console.time('start')
-			// img.src = curFrame;
-			// img.onload = function () {
-			// 	console.timeEnd('start')
-			// 	re.drawImage(this, 0, 0, 640, 480);
-			// }
-
-			// 这里是上下翻转
-			// for (var i = 0; i < vH; i++) {
-			// 	for (var j = 0; j < vW; j++) {
-			// 		Array(4).fill('').forEach((v, index) =>
-			// 			reData.data[(i * 500 + j) * 4 + index] = vData.data[((350 - i) * 500 + j) * 4 + index]
-			// 		)
-			// 	}
-			// }
-			// re.putImageData(reData, 0, 0)
-
-		}
-		// 截图
-		// context.drawImage(video, 0, 0, 200, 150)
-
-		// canvas.toDataURL('image/png')
-		// to base64 url
 
 		function haveMove(video) {
 			v.drawImage(video, 0, 0, 500, 375)
@@ -174,6 +132,7 @@
 				}
 			}, 500)
 		}
+	}
 
 	</script>
 </body>
