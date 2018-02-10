@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title></title>
 	<style>
-	video {
-		width: 500px;height:375px;border: 10px solid #ccc;
-		/*display: none;*/
-	}
-  canvas {
-    border: 10px solid #ccc;
-  }
+		video {
+			width: 500px;
+			height: 375px;
+			border: 10px solid #ccc;
+			/*display: none;*/
+		}
+
+		canvas {
+			border: 10px solid #ccc;
+		}
 	</style>
 </head>
+
 <body>
 	<h2 id="info">有人吗？？？</h2>
 	<canvas width="500" height="375" id="can1"></canvas>
@@ -23,13 +28,13 @@
 
 	<script>
 		var img = new Image();
-		img.src = './moustache.png'
+		img.src ='https://t1.aixinxi.net/o_1c5vev1c31ugpm7f155vhsbto1a.png-j.jpg'
 
-    var ws = new WebSocket('wss://nothingisblue.com/ws');
-    ws.onopen = function () {
-				// ws.send('Hello Server!');
+		var ws = new WebSocket('wss://nothingisblue.com/ws');
+		ws.onopen = function () {
+			// ws.send('Hello Server!');
 		}
-		ws.onclose=function(e){
+		ws.onclose = function (e) {
 			console.log(e);
 			ws.close(); //关闭TCP连接
 		};
@@ -52,17 +57,17 @@
 		if (navigator.getUserMedia) {
 			navigator.getUserMedia(
 				{ video: { width: 500, height: 500 } },
-				function(stream) {
+				function (stream) {
 					var video = document.querySelector('video')
 					video.srcObject = stream
-					video.onloadedmetadata = function(e) {
+					video.onloadedmetadata = function (e) {
 						video.play()
-						setInterval(function() {
+						setInterval(function () {
 							drawCanvas(video)
 						}, 500)
 					}
 				},
-				function(err) {
+				function (err) {
 					console.log('The following error occurred: ' + err.name)
 				}
 			)
@@ -78,15 +83,15 @@
 			// console.log(a)
 			ws.send(base64ToArrayBuffer(b64))
 
-			function drawOther (event) {
+			function drawOther(event) {
 				if (!event.data) return
 				// var data = event.data;
 				let temp = event.data ? JSON.parse(event.data) : ''
 
 				if (temp) {
 					let mouth = temp[0].mouth[0]
-					v.drawImage(video, 0, 0, 500, 375)
-					v.drawImage(img, mouth.x - 25 + mouth.width / 2 , mouth.y, 50, 13)
+					// v.drawImage(video, 0, 0, 500, 375)
+					v.drawImage(img, mouth.x - 25 + mouth.width / 2, mouth.y, 50, 13)
 					v.strokeStyle = '#fff';
 					v.strokeRect(mouth.x, mouth.y, mouth.width, mouth.height);
 				}
@@ -101,39 +106,40 @@
 			function base64ToArrayBuffer(base64) {
 				var bstr = window.atob(base64);
 				var bytes = new Uint8Array(bstr.length);
-				for (var i = 0; i < bstr.length; i++)        {
+				for (var i = 0; i < bstr.length; i++) {
 					bytes[i] = bstr.charCodeAt(i);
 				}
 				return bytes.buffer;
 			}
 
-		function haveMove(video) {
-			v.drawImage(video, 0, 0, 500, 375)
-			var proData = v.getImageData(0, 0, 500, 375)
-			// console.log(proData)
-			var nowData = new Image()
-			var x = 0
-			nowData.onload = function() {
-				console.log('加载好了')
-			}
-			setTimeout(function() {
-				nowData = v.getImageData(0, 0, 500, 375)
-				for (var i = 0; i < proData.data.length; i++) {
-					if (Math.abs(proData.data[i] - nowData.data[i]) > 10) {
-						x++
+			function haveMove(video) {
+				v.drawImage(video, 0, 0, 500, 375)
+				var proData = v.getImageData(0, 0, 500, 375)
+				// console.log(proData)
+				var nowData = new Image()
+				var x = 0
+				nowData.onload = function () {
+					console.log('加载好了')
+				}
+				setTimeout(function () {
+					nowData = v.getImageData(0, 0, 500, 375)
+					for (var i = 0; i < proData.data.length; i++) {
+						if (Math.abs(proData.data[i] - nowData.data[i]) > 10) {
+							x++
+						}
 					}
-				}
-				// console.log(x)
-				if (x > proData.data.length / 200) {
-					console.log('有人在动！！')
-					document.getElementById('info').innerHTML = '有人在！！'
-				} else {
-					document.getElementById('info').innerHTML = '没人~'
-				}
-			}, 500)
+					// console.log(x)
+					if (x > proData.data.length / 200) {
+						console.log('有人在动！！')
+						document.getElementById('info').innerHTML = '有人在！！'
+					} else {
+						document.getElementById('info').innerHTML = '没人~'
+					}
+				}, 500)
+			}
 		}
-	}
 
 	</script>
 </body>
+
 </html>
