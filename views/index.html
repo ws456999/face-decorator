@@ -29,8 +29,10 @@
 	<script>
 		var img = new Image();
 		img.src ='https://nothingisblue.com/images/moustache.png'
+		// img.src ='./moustache.png'
 
 		var ws = new WebSocket('wss://nothingisblue.com/ws');
+		// var ws = new WebSocket('ws:localhost:4000');
 		ws.onopen = function () {
 			// ws.send('Hello Server!');
 		}
@@ -64,7 +66,7 @@
 						video.play()
 						setInterval(function () {
 							drawCanvas(video)
-						}, 500)
+						}, 300)
 					}
 				},
 				function (err) {
@@ -88,8 +90,9 @@
 				// var data = event.data;
 				let temp = event.data ? JSON.parse(event.data) : ''
 
-				if (temp) {
+				if (temp && temp[0] && temp[0].mouth) {
 					let mouth = temp[0].mouth[0]
+					console.log(mouth)
 					// v.drawImage(video, 0, 0, 500, 375)
 					v.drawImage(img, mouth.x - 25 + mouth.width / 2, mouth.y, 50, 13)
 					v.strokeStyle = '#fff';
@@ -110,32 +113,6 @@
 					bytes[i] = bstr.charCodeAt(i);
 				}
 				return bytes.buffer;
-			}
-
-			function haveMove(video) {
-				v.drawImage(video, 0, 0, 500, 375)
-				var proData = v.getImageData(0, 0, 500, 375)
-				// console.log(proData)
-				var nowData = new Image()
-				var x = 0
-				nowData.onload = function () {
-					console.log('加载好了')
-				}
-				setTimeout(function () {
-					nowData = v.getImageData(0, 0, 500, 375)
-					for (var i = 0; i < proData.data.length; i++) {
-						if (Math.abs(proData.data[i] - nowData.data[i]) > 10) {
-							x++
-						}
-					}
-					// console.log(x)
-					if (x > proData.data.length / 200) {
-						console.log('有人在动！！')
-						document.getElementById('info').innerHTML = '有人在！！'
-					} else {
-						document.getElementById('info').innerHTML = '没人~'
-					}
-				}, 500)
 			}
 		}
 
